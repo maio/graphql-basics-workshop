@@ -1,0 +1,18 @@
+{
+  "name": "graphql-workshop-server",
+  "version": "1.0.0",
+  "description": "GraphQL Workshop Server",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "author": "Marian Schubert <marian.schubert@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-graphql": "^0.7.1",
+    "graphql": "^14.0.2",
+    "lodash": "^4.17.11",
+    "node-fetch": "^2.3.0"
+  }
+}
