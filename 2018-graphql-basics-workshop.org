@@ -1,0 +1,164 @@
+* GraphQL Basics Workshop
+
+- pastebin :: https://gist.github.com/maio
+
+- repository :: https://github.com/maio/graphql-basics-workshop (final branch contains final code)
+
+* GraphQL vs REST
+
+** REST
+*** GET https://api.example.com/books/1
+
+{ "id": "1", "name": "Mort", "authorId": "1" }
+
+*** GET https://api.example.com/authors/1
+
+{ "id": "1", "name": "Terry Pratchett" }
+
+** GraphQL:
+
+...
+
+* GraphQL
+
+** POST https://api.example.com/graphql
+
+Request Body:
+#+BEGIN_EXAMPLE
+{ book(id: "1") { id, name } }
+#+END_EXAMPLE
+
+Response:
+#+BEGIN_SRC json
+{
+  "data": {
+    "book": {
+      "id": "1",
+      "name": "Mort"
+    }
+  }
+}
+#+END_SRC
+* Workshop Tasks: Queries [100%]
+- [X] Greeting - query { greeting }
+- [X] Greeting with name parameter - query { greeting(name: "Bob") }
+- [X] Fetch book by ID - query { book(id: "1") { name } }
+- [X] Fetch all books - query { books { id, name } }
+- [X] Fetch author by ID
+- [X] Fetch author's books
+- [X] Fetch book author (and vice versa) - query { books { name, author { name } } }
+- [X] Book thumbnail URL resolver - query { books { thumbnailUrl } }
+* More APIs
+- https://github.com/APIs-guru/graphql-apis
+
+** Example: GDOM
+- http://gdom.graphene-python.org/graphql
+
+#+BEGIN_SRC graphql
+{
+  page(url: "https://www.seznam.cz/") {
+    articles: query(selector: "div.article h3") {
+      title: text(selector: "a"),
+      href: attr(selector: "a", name: "href")
+    }
+  }
+}
+#+END_SRC
+* Workshop Tasks: Mutations [100%]
+- [X] Create new book - mutation { addBook(name: "The Book", authorId: "1") }
+- [X] Create new author
+
+Mutation name should be descriptive (e.g., resetPassword).
+* The End
+* Continued: Subscriptions
+#+BEGIN_SRC javascript
+const sub = gqlClient.subscribe(gql`
+  subscription { bookAdded { id, name } }
+`);
+
+sub.subscribe({
+  next ({ data }) {
+    // data.bookAdded.id, data.bookAdded.name
+  }
+});
+#+END_SRC
+* Continued: Interface Types
+#+BEGIN_SRC javascript
+  const BookType = new GraphQLInterfaceType({
+    name: 'BookType',
+    resolveType (book) {
+      switch (book.type) {
+      case 'audio':
+        return AudioBookType;
+      default:
+        return PaperBookType;
+      }
+    },
+    fields: () => ({
+      id: {type: new GraphQLNonNull(GraphQLID)},
+      name: {type: new GraphQLNonNull(GraphQLString)}
+    })
+  });
+
+  const AudioBookType = new GraphQLObjectType({
+    name: 'AudioBookType',
+    interfaces: [BookType],
+    fields: () => ({
+      id: {type: new GraphQLNonNull(GraphQLID)},
+      name: {type: new GraphQLNonNull(GraphQLString)}
+      narrator: {type: new GraphQLNonNull(NarratorType)}
+    })
+  });
+
+  const query = gql`
+    query {
+      books {
+        id
+        name
+        ... on AudioBookType {
+          narrator { name }
+        }
+
+        ... on PaperBookType {
+          numberOfPages
+        }
+      }
+    }
+  `;
+#+END_SRC
+* Continued: Access Control
+- https://graphql.org/learn/authorization/
+
+#+BEGIN_SRC javascript
+  var postType = new GraphQLObjectType({
+    name: 'Post',
+    fields: {
+      body: {
+        type: GraphQLString,
+        resolve: (post, args, context) => {
+          // return the post body only if the user is the post's author
+          if (context.user && (context.user.id === post.authorId)) {
+            return post.body;
+          }
+          return null;
+        }
+      }
+    }
+  });
+#+END_SRC
+* As
+** Request Batching: DataLoader
+- https://github.com/facebook/dataloader#using-with-graphql
+** Caching
+https://facebook.github.io/relay/docs/en/thinking-in-graphql.html#caching-a-graph
+
+#+BEGIN_SRC graphql
+query {
+  story(id: "1") {
+    text,
+    author {
+      name
+    }
+  }
+}
+#+END_SRC
