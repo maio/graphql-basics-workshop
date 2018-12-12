@@ -9,11 +9,15 @@
 ** REST
 *** GET https://api.example.com/books/1
 
+#+BEGIN_EXAMPLE
 { "id": "1", "name": "Mort", "authorId": "1" }
+#+END_EXAMPLE
 
 *** GET https://api.example.com/authors/1
 
+#+BEGIN_EXAMPLE
 { "id": "1", "name": "Terry Pratchett" }
+#+END_EXAMPLE
 
 ** GraphQL:
 
